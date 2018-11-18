@@ -100,7 +100,7 @@ public class GameResource {
      */
     @GET
     @Path("/page/leagueId/{leagueId}/seasonId/{seasonId}")
-    public void gamesPaginated(@DefaultValue("1")
+    public void gamesPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -153,7 +153,7 @@ public class GameResource {
      */
     @GET
     @Path("leagueId/{leagueId}/seasonId/{seasonId}")
-    public void allGames(Integer pageSize,
+    public void allGamesResource(Integer pageSize,
             @PathParam("leagueId")Long leagueId, @PathParam("seasonId")Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -197,7 +197,7 @@ public class GameResource {
      */
     @GET
     @Path("{id}")
-    public void getGames(@PathParam("id")
+    public void getGamesResource(@PathParam("id")
             @Valid @NotNull(message = "Games id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -230,7 +230,7 @@ public class GameResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createCurrencyService(
+    public void createGameResource(
             @Valid @NotNull(message = "Games passed in request cannot be null") Games newGames,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -258,7 +258,7 @@ public class GameResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateCurrencyService(
+    public void updateGameResource(
             @Valid @NotNull(message = "Currency passed as parameter cannot be null") Games updatedGames,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -292,7 +292,7 @@ public class GameResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeCurrencyService(@PathParam("id")
+    public void removeGameResource(@PathParam("id")
             @Valid @NotNull(message = "Currency id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 

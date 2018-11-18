@@ -95,7 +95,7 @@ public class PlayersResource {
      */
     @GET
     @Path("/page/teamId/{teamId}")
-    public void getPlayersPaginated(@DefaultValue("1")
+    public void getPlayersPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -148,7 +148,7 @@ public class PlayersResource {
      */
     @GET
     @Path("{id}")
-    public void getPlayer(@PathParam("id")
+    public void getPlayerResource(@PathParam("id")
             @Valid @NotNull(message = "Player id must not be null") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -182,7 +182,7 @@ public class PlayersResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createPlayerService(
+    public void createPlayerResource(
             @Valid @NotNull(message = "Player passed in request cannot be null") Players newPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -210,7 +210,7 @@ public class PlayersResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updatePlayerService(
+    public void updatePlayerResource(
             @Valid @NotNull(message = "Player passed as parameter cannot be null") Players updatedPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -243,7 +243,7 @@ public class PlayersResource {
      */
     @DELETE
     @Path("{id}")
-    public void removePlayerService(
+    public void removePlayerResource(
             @Valid @NotNull(message = "Player id must not be null") @PathParam("id") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 

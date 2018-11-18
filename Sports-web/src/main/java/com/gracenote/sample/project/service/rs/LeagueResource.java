@@ -95,7 +95,7 @@ public class LeagueResource {
      */
     @GET
     @Path("/page")
-    public void getLeaguesPaginated(@DefaultValue("1")
+    public void getLeaguesPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -143,7 +143,7 @@ public class LeagueResource {
      * @param asyncResponse
      */
     @GET
-    public void allLeagues(@Suspended final AsyncResponse asyncResponse) {
+    public void allLeaguesResource(@Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
@@ -183,7 +183,7 @@ public class LeagueResource {
      */
     @GET
     @Path("{id}")
-    public void getLeague(@PathParam("id")
+    public void getLeagueResource(@PathParam("id")
             @Valid @NotNull(message = "League id must not be null") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -217,7 +217,7 @@ public class LeagueResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createLeagueService(
+    public void createLeagueResource(
             @Valid @NotNull(message = "League passed in request cannot be null") League newLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -245,7 +245,7 @@ public class LeagueResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateLeagueService(
+    public void updateLeagueResource(
             @Valid @NotNull(message = "League passed as parameter cannot be null") League updatedLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -278,7 +278,7 @@ public class LeagueResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeLeagueService(
+    public void removeLeagueResource(
             @Valid @NotNull(message = "League id must not be null") @PathParam("id") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
