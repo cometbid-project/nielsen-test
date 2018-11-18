@@ -86,7 +86,7 @@ public class PlayersResource {
     }
 
     /**
-     * For example: GET /players/teamId/123?pgNo=1&pgSize=10
+     * For example: GET /players/page/teamId/123?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
@@ -94,7 +94,7 @@ public class PlayersResource {
      * @param asyncResponse
      */
     @GET
-    @Path("teamId/{teamId}")
+    @Path("/page/teamId/{teamId}")
     public void getPlayersPaginated(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid

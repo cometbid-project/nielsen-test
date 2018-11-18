@@ -87,13 +87,14 @@ public class LeagueResource {
     }
 
     /**
-     * For example: GET /leagues?pgNo=1&pgSize=10
+     * For example: GET /leagues/page?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
      * @param asyncResponse
      */
     @GET
+    @Path("/page")
     public void getLeaguesPaginated(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid

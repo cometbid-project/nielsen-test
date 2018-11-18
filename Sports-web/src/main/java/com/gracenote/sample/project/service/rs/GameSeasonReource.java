@@ -90,13 +90,14 @@ public class GameSeasonReource {
     }
 
     /**
-     * For example: GET /seasons?pgNo=1&pgSize=10
+     * For example: GET /seasons/page?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
      * @param asyncResponse
      */
     @GET
+    @Path("/page")
     public void gameSeasonsPaginated(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
