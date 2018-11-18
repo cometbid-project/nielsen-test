@@ -42,7 +42,7 @@ public class TimeInMethodInterceptor {
             logger.error("!!!During invocation of: {0} exception occured: {1}", new Object[]{methodName, e});
             throw e;
         } finally {
-            logger.info("{0} performed in: {1}", new Object[]{methodName, (endTime - startTime)});
+            logger.info("{0} performed in: {1} milliseconds", new Object[]{methodName, (endTime - startTime)});
         }
     }
 }

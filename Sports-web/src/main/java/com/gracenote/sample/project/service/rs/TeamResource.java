@@ -22,7 +22,6 @@ import com.gracenote.sample.project.utility.Logger;
 import com.gracenote.sample.project.utility.ThreadManagerService;
 import static com.gracenote.sample.project.utility.ThreadManagerService.REFERER;
 import com.gracenote.sample.project.utility.ThreadNameTrackingRunnable;
-import com.gracenote.sample.project.utility.Util;
 import com.gracenote.sample.project.validators.PagingValidator;
 import java.net.URI;
 import java.util.Collection;
@@ -76,7 +75,7 @@ public class TeamResource {
     GameNotFoundMapper gameErrorMapper;
     @Inject
     LeagueNotFoundMapper leagueErrorMapper;
-    
+
     @Inject
     private LeagueFacadeLocal leagueFacade;
 
@@ -97,6 +96,10 @@ public class TeamResource {
 
     @PostConstruct
     public void initialise() {
+        if (httpHeaders == null) {
+            throw new RuntimeException(String.format("At least one Header field must be specified: {0}",
+                    "Mandatory: REFERER"));
+        }
         String referer = httpHeaders.getRequestHeader(REFERER).get(0);
         actionName = utService.createName(uriInfo.getRequestUri().toString(), referer);
     }
@@ -111,17 +114,16 @@ public class TeamResource {
      */
     @GET
     @Path("/page/leagueId/{leagueId}")
-    public void getTeamPaginatedResource(@DefaultValue("1")
+    public void getTeamPaginatedResource(
+            @DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
-            @NotNull(message = "Page number must not be null")
             @PagingValidator(message = "Page number must be greater than 0") Integer pageNumber,
             @DefaultValue("10")
             @QueryParam("pgSize")
             @Valid
-            @NotNull(message = "Page size must not be null")
             @PagingValidator(message = "Page size must be greater than 0") Integer pageSize,
-            @PathParam("leagueId")Long leagueId, 
+            @PathParam("leagueId") @NotNull(message = "League id must be specified") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -129,7 +131,7 @@ public class TeamResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
                 Map<Long, List<Team>> teamMapList = teamFacade.findAllTeamsInLeaguePaginated(
-                        Util.getPageNumber(pageNumber), Util.getPageSize(pageSize), leagueId);
+                        pageNumber, pageSize, leagueId);
 
                 long key = (Long) teamMapList.keySet().toArray()[0];
                 if (teamMapList.isEmpty() || key <= 0) {
@@ -147,7 +149,7 @@ public class TeamResource {
                     asyncResponse.resume(response);
                 }
             } catch (RuntimeException ex) {
-                LOGGER.error("Unexpected error occured while retrieving Currencies: {0}", ex.getMessage());
+                LOGGER.error("Unexpected error occured while retrieving Teams: {0}", ex.getMessage());
                 Response response = Response.serverError().build();
                 asyncResponse.resume(response);
             }
@@ -157,14 +159,14 @@ public class TeamResource {
     /**
      * For example: GET /teams/leagueId/123?pgNo=1&pgSize=10
      *
-     * @param pageSize
      * @param asyncResponse
      * @param leagueId
      */
     @GET
     @Path("leagueId/{leagueId}")
-    public void allTeamsInLeagueResource(Integer pageSize,
-          @PathParam("leagueId")Long leagueId, @Suspended final AsyncResponse asyncResponse) {
+    public void allTeamsInLeagueResource(
+            @PathParam("leagueId") @NotNull(message = "League id must be specified") Long leagueId,
+            @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
@@ -210,8 +212,9 @@ public class TeamResource {
      */
     @GET
     @Path("{id}")
-    public void getTeamResource(@PathParam("id")
-            @Valid @NotNull(message = "Team id must not be null") Long teamId,
+    public void getTeamResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "Team id must be specified") Long teamId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -243,8 +246,9 @@ public class TeamResource {
      */
     @GET
     @Path("gameId/{gameId}")
-    public void getTeamsByGameResource(@PathParam("gameId")
-            @Valid @NotNull(message = "Game id must not be null") Long gameId,
+    public void getTeamsByGameResource(
+            @PathParam("gameId")
+            @Valid @NotNull(message = "Game id must be specified") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -280,16 +284,16 @@ public class TeamResource {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     public void createTeamResource(
-            @Valid @NotNull(message = "Team passed in request cannot be null") Team newTeam,
+            @Valid @NotNull(message = "Team must be specified in the body of request") Team newTeam,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
-                Team currency = teamFacade.createTeam(newTeam);
+                Team team = teamFacade.createTeam(newTeam);
 
-                Response response = Response.created(getTeamLocation(currency)).build();
+                Response response = Response.created(getTeamLocation(team)).build();
                 asyncResponse.resume(response);
             } catch (RuntimeException ex) {
                 LOGGER.error("Unexpected error occured while creating Team: {0}", ex.getMessage());
@@ -308,7 +312,7 @@ public class TeamResource {
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
     public void updateTeamResource(
-            @Valid @NotNull(message = "Team passed as parameter cannot be null") Team updatedTeam,
+            @Valid @NotNull(message = "Team must be specified in the body of request") Team updatedTeam,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -316,9 +320,9 @@ public class TeamResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
 
             try {
-                Team currency = teamFacade.editTeam(updatedTeam);
+                Team team = teamFacade.editTeam(updatedTeam);
 
-                String jsonStr = buildTeamJson(currency).toString();
+                String jsonStr = buildTeamJson(team).toString();
                 Response response = Response.ok(jsonStr).build();
                 asyncResponse.resume(response);
             } catch (TeamNotFoundException ex) {
@@ -336,20 +340,20 @@ public class TeamResource {
     /**
      * For example: DELETE /teams/123
      *
-     * @param gameId
+     * @param teamId
      * @param asyncResponse
      */
     @DELETE
     @Path("{id}")
     public void removeTeamResource(@PathParam("id")
-            @Valid @NotNull(message = "Team id must not be null") Long gameId,
+            @Valid @NotNull(message = "Team id must be specified") Long teamId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
-                teamFacade.removeTeam(gameId);
+                teamFacade.removeTeam(teamId);
 
                 Response response = Response.ok().build();
                 asyncResponse.resume(response);

@@ -69,7 +69,7 @@ public class ThreadManagerService {
     }
     
     public void configureTimeout(final AsyncResponse asyncResponse){
-        asyncResponse.setTimeout(5, TimeUnit.MINUTES);
+        asyncResponse.setTimeout(2, TimeUnit.MINUTES);
         asyncResponse.setTimeoutHandler(r ->
                 r.resume(Response.status(Response.Status.SERVICE_UNAVAILABLE)));
     }

@@ -9,8 +9,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -19,7 +17,7 @@ import java.util.logging.Logger;
 public class ApplicationStatistics {
 
     private static ApplicationStatistics INSTANCE;
-    private static final Logger logger = Logger.getLogger(ApplicationStatistics.class.getName());
+    private static final Logger LOGGER = new Logger(ApplicationStatistics.class.getName());
 
     private ApplicationStatistics(Map<String, StatisticsData> statisticsMap) {
         statisticsCache = statisticsMap;
@@ -60,7 +58,7 @@ public class ApplicationStatistics {
         while (iter.hasNext()) {
             String name = iter.next();
             StatisticsData data = statisticsCache.get(name);
-            logger.log(Level.INFO, "method Name - {0} and No of Hits: {1}, Total Time: {2}, Average Time: {3}",
+            LOGGER.info("method Name - {0} and No of Hits: {1}, Total Time: {2}, Average Time: {3}",
                     new Object[]{name, data.getCount(), data.getTotalTime(), data.getAverageTime()});
         }
     }
