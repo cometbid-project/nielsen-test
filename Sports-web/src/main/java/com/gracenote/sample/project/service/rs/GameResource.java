@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -64,7 +63,7 @@ public class GameResource {
 
     private static final Logger LOGGER = new Logger(GameResource.class.getName());
 
-    @EJB
+    @Inject
     private GamesFacadeLocal gamesFacade;
     
     @Inject
