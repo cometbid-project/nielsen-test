@@ -38,7 +38,7 @@ public class ApplicationConfig extends Application {
         resources.add(com.gracenote.sample.project.mappers.TeamNotFoundMapper.class);
         resources.add(com.gracenote.sample.project.mappers.ValidationExceptionMapper.class);
         resources.add(com.gracenote.sample.project.service.rs.GameResource.class);
-        resources.add(com.gracenote.sample.project.service.rs.GameSeasonReource.class);
+        resources.add(com.gracenote.sample.project.service.rs.GameSeasonResource.class);
         resources.add(com.gracenote.sample.project.service.rs.LeagueResource.class);
         resources.add(com.gracenote.sample.project.service.rs.PlayersResource.class);
         resources.add(com.gracenote.sample.project.service.rs.TeamResource.class);
