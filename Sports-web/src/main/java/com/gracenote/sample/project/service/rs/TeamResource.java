@@ -78,7 +78,7 @@ public class TeamResource {
     @Inject
     LeagueNotFoundMapper leagueErrorMapper;
     
-    @EJB
+    @Inject
     private LeagueFacadeLocal leagueFacade;
 
     @Inject

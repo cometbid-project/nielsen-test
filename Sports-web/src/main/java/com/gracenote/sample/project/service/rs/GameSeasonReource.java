@@ -72,7 +72,7 @@ public class GameSeasonReource {
     @Inject
     JsonEntityBuilder seasonsVo;
 
-    @EJB
+    @Inject
     private GameSeasonFacadeLocal seasonsFacade;
 
     @Context

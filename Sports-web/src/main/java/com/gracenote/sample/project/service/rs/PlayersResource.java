@@ -70,7 +70,7 @@ public class PlayersResource {
     @Inject
     PlayerNotFoundMapper playerErrorMapper;
 
-    @EJB
+    @Inject
     private PlayersFacadeLocal playerFacade;
   
     @Context

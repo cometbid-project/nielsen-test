@@ -63,7 +63,7 @@ public class LeagueResource {
 
     private static final Logger LOGGER = new Logger(LeagueResource.class.getName());
 
-    @EJB
+    @Inject
     private LeagueFacadeLocal leagueFacade;
 
     @Inject
