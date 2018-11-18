@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.gracenote.sample.project</groupId>
-            <artifactId>SportsReport-ejb</artifactId>
+            <artifactId>Sports-ejb</artifactId>
             <version>1.0</version>
             <exclusions>     
                 <exclusion>
