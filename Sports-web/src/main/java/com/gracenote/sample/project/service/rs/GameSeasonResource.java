@@ -17,7 +17,6 @@ import com.gracenote.sample.project.utility.Logger;
 import com.gracenote.sample.project.utility.ThreadManagerService;
 import static com.gracenote.sample.project.utility.ThreadManagerService.REFERER;
 import com.gracenote.sample.project.utility.ThreadNameTrackingRunnable;
-import com.gracenote.sample.project.utility.Util;
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
@@ -59,9 +58,9 @@ import javax.validation.constraints.NotNull;
 @Path("seasons")
 @Produces({MediaType.APPLICATION_JSON})
 @Interceptors({HitCounterInterceptor.class, TimeInMethodInterceptor.class})
-public class GameSeasonReource {
+public class GameSeasonResource {
 
-    private static final Logger LOGGER = new Logger(GameSeasonReource.class.getName());
+    private static final Logger LOGGER = new Logger(GameSeasonResource.class.getName());
 
     @Inject
     ThreadManagerService utService;
@@ -85,6 +84,10 @@ public class GameSeasonReource {
 
     @PostConstruct
     public void initialise() {
+        if(httpHeaders == null){
+           throw new RuntimeException(String.format("At least one Header field must be specified: {0}", 
+                   "Mandatory: REFERER"));
+        }
         String referer = httpHeaders.getRequestHeader(REFERER).get(0);
         actionName = utService.createName(uriInfo.getRequestUri().toString(), referer);
     }
@@ -98,27 +101,28 @@ public class GameSeasonReource {
      */
     @GET
     @Path("/page")
-    public void gameSeasonsPaginatedResource(@DefaultValue("1")
+    public void gameSeasonsPaginatedResource(
+            @DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
-            @NotNull(message = "Page number must not be null")
             @PagingValidator(message = "Page number must be greater than 0") Integer pageNumber,
             @DefaultValue("10")
             @QueryParam("pgSize")
             @Valid
-            @NotNull(message = "Page size must not be null")
             @PagingValidator(message = "Page size must be greater than 0") Integer pageSize,
             @Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        // initialise();
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
 
                 Map<Long, List<GameSeason>> seasonsMapList = seasonsFacade
-                        .findAllSeasonsPaginated(Util.getPageNumber(pageNumber), Util.getPageSize(pageSize));
+                        .findAllSeasonsPaginated(pageNumber, pageSize);
 
-                long key = (Long) seasonsMapList.keySet().toArray()[0];
+                Long key = (Long) seasonsMapList.keySet().toArray()[0];
                 if (seasonsMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -149,6 +153,8 @@ public class GameSeasonReource {
     @GET
     public void allGameSeasonsResource(@Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        // initialise();
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
@@ -156,7 +162,7 @@ public class GameSeasonReource {
 
                 Map<Long, List<GameSeason>> seasonsMapList = seasonsFacade.findAllSeasons();
 
-                long key = (Integer) seasonsMapList.keySet().toArray()[0];
+                Long key = (Long) seasonsMapList.keySet().toArray()[0];
                 if (seasonsMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -187,10 +193,14 @@ public class GameSeasonReource {
      */
     @GET
     @Path("{id}")
-    public void getGameSeasonResource(@PathParam("id")
-            @Valid @NotNull(message = "GameSeason id must not be null") Long seasonId,
+    public void getGameSeasonResource(
+            @PathParam("id")
+            @Valid
+            @NotNull(message = "GameSeason id must be specified") Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        //initialise();
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
@@ -222,9 +232,12 @@ public class GameSeasonReource {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     public void createGameSeasonResource(
-            @Valid @NotNull(message = "GameSeason passed in request cannot be null") GameSeason newSeason,
+            @Valid
+            @NotNull(message = "GameSeason must be specified in the body of request") GameSeason newSeason,
             @Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        //initialise();
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
@@ -250,26 +263,32 @@ public class GameSeasonReource {
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
     public void updateGameSeasonResource(
-            @Valid @NotNull(message = "GameSeason passed as parameter cannot be null") GameSeason updatedSeason,
+            @Valid
+            @NotNull(message = "GameSeason must be specified in the body of request") GameSeason updatedSeason,
             @Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        //initialise();
         utService.configureTimeout(asyncResponse);
 
-        try {
-            GameSeason country = seasonsFacade.editGameSeason(updatedSeason);
+        utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
 
-            String jsonStr = buildGameSeasonJson(country).toString();
-            Response response = Response.ok(jsonStr).build();
-            asyncResponse.resume(response);
-        } catch (GameSeasonNotFoundException ex) {
-            LOGGER.error("Error occured while updating GameSeason: {0}", ex.getMessage());
-            Response response = seasonErrorMapper.toResponse(ex);
-            asyncResponse.resume(response);
-        } catch (RuntimeException ex) {
-            LOGGER.error("Unexpected error occured while updating GameSeason: {0}", ex.getMessage());
-            Response response = Response.serverError().build();
-            asyncResponse.resume(response);
-        }
+            try {
+                GameSeason gamesSeason = seasonsFacade.editGameSeason(updatedSeason);
+
+                String jsonStr = buildGameSeasonJson(gamesSeason).toString();
+                Response response = Response.ok(jsonStr).build();
+                asyncResponse.resume(response);
+            } catch (GameSeasonNotFoundException ex) {
+                LOGGER.error("Error occured while updating GameSeason: {0}", ex.getMessage());
+                Response response = seasonErrorMapper.toResponse(ex);
+                asyncResponse.resume(response);
+            } catch (RuntimeException ex) {
+                LOGGER.error("Unexpected error occured while updating GameSeason: {0}", ex.getMessage());
+                Response response = Response.serverError().build();
+                asyncResponse.resume(response);
+            }
+        }, actionName));
     }
 
     /**
@@ -280,10 +299,13 @@ public class GameSeasonReource {
      */
     @DELETE
     @Path("{id}")
-    public void removeGameSeasonResource(@PathParam("id")
-            @Valid @NotNull(message = "GameSeason id must not be null") Long seasonId,
+    public void removeGameSeasonResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "GameSeason id must be specified") Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 
+        //do thread initialization
+        //initialise();
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
@@ -314,8 +336,8 @@ public class GameSeasonReource {
 
     private URI getGameSeasonLocation(GameSeason season) {
         return uriInfo.getBaseUriBuilder()
-                .path(GameSeasonReource.class)
-                .path(GameSeasonReource.class, "getGameSeason")
+                .path(GameSeasonResource.class)
+                .path(GameSeasonResource.class, "getGameSeason")
                 .build(season.getSeasonId());
     }
 

@@ -5,12 +5,7 @@
  */
 package com.gracenote.sample.project.ut.monitor;
 
-import com.gracenote.sample.project.qualifiers.JavaUtilLogger;
-import com.gracenote.sample.project.services.impl.GamesFacade;
 import com.gracenote.sample.project.utility.ApplicationStatistics;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.InvocationContext;

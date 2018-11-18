@@ -16,7 +16,6 @@ import com.gracenote.sample.project.mappers.PlayerNotFoundMapper;
 import com.gracenote.sample.project.services.PlayersFacadeLocal;
 import com.gracenote.sample.project.utility.Logger;
 import com.gracenote.sample.project.utility.ThreadNameTrackingRunnable;
-import com.gracenote.sample.project.utility.Util;
 import com.gracenote.sample.project.validators.PagingValidator;
 import java.net.URI;
 import java.util.Collection;
@@ -81,6 +80,10 @@ public class PlayersResource {
 
     @PostConstruct
     public void initialise() {
+        if(httpHeaders == null){
+           throw new RuntimeException(String.format("At least one Header field must be specified: {0}", 
+                   "Mandatory: REFERER"));
+        }
         String referer = httpHeaders.getRequestHeader(REFERER).get(0);
         actionName = utService.createName(uriInfo.getRequestUri().toString(), referer);
     }
@@ -95,15 +98,14 @@ public class PlayersResource {
      */
     @GET
     @Path("/page/teamId/{teamId}")
-    public void getPlayersPaginatedResource(@DefaultValue("1")
+    public void getPlayersPaginatedResource(
+            @DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
-            @NotNull(message = "Page number must not be null")
             @PagingValidator(message = "Page number must be greater than 0") Integer pageNumber,
             @DefaultValue("10")
             @QueryParam("pgSize")
             @Valid
-            @NotNull(message = "Page size must not be null")
             @PagingValidator(message = "Page size must be greater than 0") Integer pageSize,
             @PathParam("teamId") Long teamId,
             @Suspended final AsyncResponse asyncResponse) {
@@ -113,9 +115,9 @@ public class PlayersResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
                 Map<Long, List<Players>> playerMapList = playerFacade.findAllPlayersByTeamPaginated(
-                        Util.getPageNumber(pageNumber), Util.getPageSize(pageSize), teamId );
+                        pageNumber, pageSize, teamId );
 
-                long key = (Integer) playerMapList.keySet().toArray()[0];
+                Long key = (Long) playerMapList.keySet().toArray()[0];
                 if (playerMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -148,8 +150,9 @@ public class PlayersResource {
      */
     @GET
     @Path("{id}")
-    public void getPlayerResource(@PathParam("id")
-            @Valid @NotNull(message = "Player id must not be null") Long playerId,
+    public void getPlayerResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "Player id must be specified") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -183,7 +186,8 @@ public class PlayersResource {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     public void createPlayerResource(
-            @Valid @NotNull(message = "Player passed in request cannot be null") Players newPlayer,
+            @Valid 
+            @NotNull(message = "Player must be specified in the body of request") Players newPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -211,7 +215,9 @@ public class PlayersResource {
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
     public void updatePlayerResource(
-            @Valid @NotNull(message = "Player passed as parameter cannot be null") Players updatedPlayer,
+            @Valid 
+            @NotNull(message = "Player must be specified in the body of request") 
+            Players updatedPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -244,7 +250,9 @@ public class PlayersResource {
     @DELETE
     @Path("{id}")
     public void removePlayerResource(
-            @Valid @NotNull(message = "Player id must not be null") @PathParam("id") Long playerId,
+            @Valid 
+            @NotNull(message = "Player id must be specified")
+            @PathParam("id") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);

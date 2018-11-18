@@ -16,7 +16,6 @@ import com.gracenote.sample.project.utility.Logger;
 import com.gracenote.sample.project.utility.ThreadManagerService;
 import static com.gracenote.sample.project.utility.ThreadManagerService.REFERER;
 import com.gracenote.sample.project.utility.ThreadNameTrackingRunnable;
-import com.gracenote.sample.project.utility.Util;
 import com.gracenote.sample.project.validators.PagingValidator;
 import java.net.URI;
 import java.util.Collection;
@@ -82,6 +81,10 @@ public class LeagueResource {
 
     @PostConstruct
     public void initialise() {
+        if(httpHeaders == null){
+           throw new RuntimeException(String.format("At least one Header field must be specified: {0}", 
+                   "Mandatory: REFERER"));
+        }
         String referer = httpHeaders.getRequestHeader(REFERER).get(0);
         actionName = utService.createName(uriInfo.getRequestUri().toString(), referer);
     }
@@ -95,15 +98,14 @@ public class LeagueResource {
      */
     @GET
     @Path("/page")
-    public void getLeaguesPaginatedResource(@DefaultValue("1")
+    public void getLeaguesPaginatedResource(
+            @DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
-            @NotNull(message = "Page number must not be null")
             @PagingValidator(message = "Page number must be greater than 0") Integer pageNumber,
             @DefaultValue("10")
             @QueryParam("pgSize")
             @Valid
-            @NotNull(message = "Page size must not be null")
             @PagingValidator(message = "Page size must be greater than 0") Integer pageSize,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -112,9 +114,9 @@ public class LeagueResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
                 Map<Long, List<League>> leagueMapList = leagueFacade.findAllLeaguesPaginated(
-                        Util.getPageNumber(pageNumber), Util.getPageSize(pageSize));
+                        pageNumber, pageSize);
 
-                long key = (Integer) leagueMapList.keySet().toArray()[0];
+                Long key = (Long) leagueMapList.keySet().toArray()[0];
                 if (leagueMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -152,7 +154,7 @@ public class LeagueResource {
 
                 Map<Long, List<League>> leagueMapList = leagueFacade.findAllLeagues();
 
-                long key = (Integer) leagueMapList.keySet().toArray()[0];
+                Long key = (Long) leagueMapList.keySet().toArray()[0];
                 if (leagueMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -183,8 +185,9 @@ public class LeagueResource {
      */
     @GET
     @Path("{id}")
-    public void getLeagueResource(@PathParam("id")
-            @Valid @NotNull(message = "League id must not be null") Long leagueId,
+    public void getLeagueResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "League id must be specified") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -218,7 +221,7 @@ public class LeagueResource {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     public void createLeagueResource(
-            @Valid @NotNull(message = "League passed in request cannot be null") League newLeague,
+            @Valid @NotNull(message = "League must be specified in the body of request") League newLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -246,7 +249,7 @@ public class LeagueResource {
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
     public void updateLeagueResource(
-            @Valid @NotNull(message = "League passed as parameter cannot be null") League updatedLeague,
+            @Valid @NotNull(message = "League must be specified in the body of request") League updatedLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -279,7 +282,8 @@ public class LeagueResource {
     @DELETE
     @Path("{id}")
     public void removeLeagueResource(
-            @Valid @NotNull(message = "League id must not be null") @PathParam("id") Long leagueId,
+            @Valid @NotNull(message = "League id must be specified") 
+            @PathParam("id") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);

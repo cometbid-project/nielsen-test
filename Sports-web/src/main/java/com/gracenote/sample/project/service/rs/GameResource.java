@@ -7,6 +7,7 @@ package com.gracenote.sample.project.service.rs;
 
 import com.gracenote.sample.project.entities.Games;
 import com.gracenote.sample.project.exceptions.GameNotFoundException;
+import com.gracenote.sample.project.exceptions.InvalidParameterException;
 import com.gracenote.sample.project.ut.vo.JsonEntityBuilder;
 import com.gracenote.sample.project.mappers.GameNotFoundMapper;
 import com.gracenote.sample.project.services.GamesFacadeLocal;
@@ -16,7 +17,6 @@ import com.gracenote.sample.project.utility.Logger;
 import com.gracenote.sample.project.utility.ThreadManagerService;
 import static com.gracenote.sample.project.utility.ThreadManagerService.REFERER;
 import com.gracenote.sample.project.utility.ThreadNameTrackingRunnable;
-import com.gracenote.sample.project.utility.Util;
 import com.gracenote.sample.project.validators.PagingValidator;
 import java.net.URI;
 import java.util.Collection;
@@ -85,6 +85,10 @@ public class GameResource {
 
     @PostConstruct
     public void initialise() {
+        if(httpHeaders == null){
+           throw new RuntimeException(String.format("At least one Header field must be specified: {0}", 
+                   "Mandatory: REFERER"));
+        }
         String referer = httpHeaders.getRequestHeader(REFERER).get(0);
         actionName = utService.createName(uriInfo.getRequestUri().toString(), referer);
     }
@@ -100,17 +104,17 @@ public class GameResource {
      */
     @GET
     @Path("/page/leagueId/{leagueId}/seasonId/{seasonId}")
-    public void gamesPaginatedResource(@DefaultValue("1")
+    public void gamesPaginatedResource(
+            @DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
-            @NotNull(message = "Page number must not be null")
             @PagingValidator(message = "Page number must be greater than 0") Integer pageNumber,
             @DefaultValue("10")
             @QueryParam("pgSize")
             @Valid
-            @NotNull(message = "Page size must not be null")
             @PagingValidator(message = "Page size must be greater than 0") Integer pageSize,
-            @PathParam("leagueId")Long leagueId, @PathParam("seasonId")Long seasonId, 
+            @PathParam("leagueId") @NotNull(message = "League id must be specified")Long leagueId, 
+            @PathParam("seasonId") @NotNull(message = "Season id must be specified") Long seasonId, 
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -118,9 +122,9 @@ public class GameResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
                 Map<Long, List<Games>> gamesMapList = gamesFacade.findAllGamesByLeagueAndSeasonPaginated(                       
-                        Util.getPageNumber(pageNumber), Util.getPageSize(pageSize), leagueId, seasonId);
+                        pageNumber, pageSize, leagueId, seasonId);
 
-                long key = (Long) gamesMapList.keySet().toArray()[0];
+                Long key = (Long) gamesMapList.keySet().toArray()[0];
                 if (gamesMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -136,7 +140,7 @@ public class GameResource {
                     asyncResponse.resume(response);
                 }
             } catch (RuntimeException ex) {
-                LOGGER.error("Unexpected error occured while retrieving Currencies: {0}", ex.getMessage());
+                LOGGER.error("Unexpected error occured while retrieving Games: {0}", ex.getMessage());
                 Response response = Response.serverError().build();
                 asyncResponse.resume(response);
             }
@@ -146,15 +150,15 @@ public class GameResource {
     /**
      * For example: GET /games
      *
-     * @param pageSize
      * @param asyncResponse
      * @param seasonId
      * @param leagueId
      */
     @GET
     @Path("leagueId/{leagueId}/seasonId/{seasonId}")
-    public void allGamesResource(Integer pageSize,
-            @PathParam("leagueId")Long leagueId, @PathParam("seasonId")Long seasonId,
+    public void allGamesResource(
+            @PathParam("leagueId") @NotNull(message = "League id must be specified")Long leagueId, 
+            @PathParam("seasonId") @NotNull(message = "Season id must be specified") Long seasonId, 
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -165,7 +169,7 @@ public class GameResource {
                 Map<Long, List<Games>> gamesMapList = gamesFacade
                         .findAllGamesByLeagueAndSeason(leagueId, seasonId);
 
-                long key = (Integer) gamesMapList.keySet().toArray()[0];
+                Long key = (Long) gamesMapList.keySet().toArray()[0];
                 if (gamesMapList.isEmpty() || key <= 0) {
                     Response response = Response.status(Response.Status.NO_CONTENT).build();
                     asyncResponse.resume(response);
@@ -197,8 +201,9 @@ public class GameResource {
      */
     @GET
     @Path("{id}")
-    public void getGamesResource(@PathParam("id")
-            @Valid @NotNull(message = "Games id must not be null") Long gameId,
+    public void getGamesResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "Game id must be specified") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -231,19 +236,19 @@ public class GameResource {
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
     public void createGameResource(
-            @Valid @NotNull(message = "Games passed in request cannot be null") Games newGames,
+            @Valid @NotNull(message = "Game must be specified in the body of request") Games newGames,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
             try {
-                Games currency = gamesFacade.createGame(newGames);
+                Games games = gamesFacade.createGame(newGames);
 
-                Response response = Response.created(getGamesLocation(currency)).build();
+                Response response = Response.created(getGamesLocation(games)).build();
                 asyncResponse.resume(response);
             } catch (RuntimeException ex) {
-                LOGGER.error("Unexpected error occured while creating Currency: {0}", ex.getMessage());
+                LOGGER.error("Unexpected error occured while creating Games: {0}", ex.getMessage());
                 Response response = Response.serverError().build();
                 asyncResponse.resume(response);
             }
@@ -259,7 +264,7 @@ public class GameResource {
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
     public void updateGameResource(
-            @Valid @NotNull(message = "Currency passed as parameter cannot be null") Games updatedGames,
+            @Valid @NotNull(message = "Game must be specified in the body of request") Games updatedGames,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -267,9 +272,9 @@ public class GameResource {
         utService.getManagedExecutorService().execute(new ThreadNameTrackingRunnable(() -> {
 
             try {
-                Games currency = gamesFacade.editGame(updatedGames);
+                Games games = gamesFacade.editGame(updatedGames);
 
-                String jsonStr = buildGamesJson(currency).toString();
+                String jsonStr = buildGamesJson(games).toString();
                 Response response = Response.ok(jsonStr).build();
                 asyncResponse.resume(response);
             } catch (GameNotFoundException ex) {
@@ -292,8 +297,9 @@ public class GameResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeGameResource(@PathParam("id")
-            @Valid @NotNull(message = "Currency id must not be null") Long gameId,
+    public void removeGameResource(
+            @PathParam("id")
+            @Valid @NotNull(message = "Game id must be specified") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);

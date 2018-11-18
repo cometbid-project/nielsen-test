@@ -9,7 +9,6 @@ import com.gracenote.sample.project.exceptions.MediaTypeNotSpecifiedException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.logging.Logger;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -27,7 +26,7 @@ public class JSONRequestFilter implements ContainerRequestFilter {
 
     @Context
     private UriInfo uriInfo;
-    private static final Logger logger = Logger.getLogger(JSONRequestFilter.class.getName());
+    private static final Logger LOGGER = new Logger(JSONRequestFilter.class.getName());
 
     @Override
     public void filter(ContainerRequestContext crc) throws MediaTypeNotSpecifiedException, IOException {
