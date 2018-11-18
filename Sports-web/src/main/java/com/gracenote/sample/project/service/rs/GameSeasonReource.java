@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -72,7 +71,7 @@ public class GameSeasonReource {
     @Inject
     JsonEntityBuilder seasonsVo;
 
-    @EJB
+    @Inject
     private GameSeasonFacadeLocal seasonsFacade;
 
     @Context
@@ -91,14 +90,15 @@ public class GameSeasonReource {
     }
 
     /**
-     * For example: GET /seasons?pgNo=1&pgSize=10
+     * For example: GET /seasons/page?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
      * @param asyncResponse
      */
     @GET
-    public void gameSeasonsPaginated(@DefaultValue("1")
+    @Path("/page")
+    public void gameSeasonsPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -147,7 +147,7 @@ public class GameSeasonReource {
      * @param asyncResponse
      */
     @GET
-    public void allGameSeasons(@Suspended final AsyncResponse asyncResponse) {
+    public void allGameSeasonsResource(@Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
@@ -187,7 +187,7 @@ public class GameSeasonReource {
      */
     @GET
     @Path("{id}")
-    public void getGameSeason(@PathParam("id")
+    public void getGameSeasonResource(@PathParam("id")
             @Valid @NotNull(message = "GameSeason id must not be null") Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -221,7 +221,7 @@ public class GameSeasonReource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createGameSeason(
+    public void createGameSeasonResource(
             @Valid @NotNull(message = "GameSeason passed in request cannot be null") GameSeason newSeason,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -249,7 +249,7 @@ public class GameSeasonReource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateCountryService(
+    public void updateGameSeasonResource(
             @Valid @NotNull(message = "GameSeason passed as parameter cannot be null") GameSeason updatedSeason,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -280,7 +280,7 @@ public class GameSeasonReource {
      */
     @DELETE
     @Path("{id}")
-    public void removeCountryService(@PathParam("id")
+    public void removeGameSeasonResource(@PathParam("id")
             @Valid @NotNull(message = "GameSeason id must not be null") Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 

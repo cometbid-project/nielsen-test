@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -78,15 +77,15 @@ public class TeamResource {
     @Inject
     LeagueNotFoundMapper leagueErrorMapper;
     
-    @EJB
+    @Inject
     private LeagueFacadeLocal leagueFacade;
 
     @Inject
     JsonEntityBuilder teamVo;
 
-    @EJB
+    @Inject
     private TeamFacadeLocal teamFacade;
-    @EJB
+    @Inject
     private GamesFacadeLocal gamesFacade;
 
     @Context
@@ -103,7 +102,7 @@ public class TeamResource {
     }
 
     /**
-     * For example: GET /teams/leagueId/123?pgNo=1&pgSize=10
+     * For example: GET /teams/page/leagueId/123?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
@@ -111,8 +110,8 @@ public class TeamResource {
      * @param asyncResponse
      */
     @GET
-    @Path("leagueId/{leagueId}")
-    public void teamPaginated(@DefaultValue("1")
+    @Path("/page/leagueId/{leagueId}")
+    public void getTeamPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -164,7 +163,7 @@ public class TeamResource {
      */
     @GET
     @Path("leagueId/{leagueId}")
-    public void allTeamsInLeague(Integer pageSize,
+    public void allTeamsInLeagueResource(Integer pageSize,
           @PathParam("leagueId")Long leagueId, @Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
@@ -211,7 +210,7 @@ public class TeamResource {
      */
     @GET
     @Path("{id}")
-    public void getTeam(@PathParam("id")
+    public void getTeamResource(@PathParam("id")
             @Valid @NotNull(message = "Team id must not be null") Long teamId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -244,7 +243,7 @@ public class TeamResource {
      */
     @GET
     @Path("gameId/{gameId}")
-    public void getTeamsByGame(@PathParam("gameId")
+    public void getTeamsByGameResource(@PathParam("gameId")
             @Valid @NotNull(message = "Game id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -280,7 +279,7 @@ public class TeamResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createTeamService(
+    public void createTeamResource(
             @Valid @NotNull(message = "Team passed in request cannot be null") Team newTeam,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -308,7 +307,7 @@ public class TeamResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateTeamService(
+    public void updateTeamResource(
             @Valid @NotNull(message = "Team passed as parameter cannot be null") Team updatedTeam,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -342,7 +341,7 @@ public class TeamResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeTeamService(@PathParam("id")
+    public void removeTeamResource(@PathParam("id")
             @Valid @NotNull(message = "Team id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 

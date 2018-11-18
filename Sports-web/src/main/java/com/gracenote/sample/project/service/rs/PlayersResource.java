@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -70,7 +69,7 @@ public class PlayersResource {
     @Inject
     PlayerNotFoundMapper playerErrorMapper;
 
-    @EJB
+    @Inject
     private PlayersFacadeLocal playerFacade;
   
     @Context
@@ -87,7 +86,7 @@ public class PlayersResource {
     }
 
     /**
-     * For example: GET /players/teamId/123?pgNo=1&pgSize=10
+     * For example: GET /players/page/teamId/123?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
@@ -95,8 +94,8 @@ public class PlayersResource {
      * @param asyncResponse
      */
     @GET
-    @Path("teamId/{teamId}")
-    public void getPlayersPaginated(@DefaultValue("1")
+    @Path("/page/teamId/{teamId}")
+    public void getPlayersPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -149,7 +148,7 @@ public class PlayersResource {
      */
     @GET
     @Path("{id}")
-    public void getPlayer(@PathParam("id")
+    public void getPlayerResource(@PathParam("id")
             @Valid @NotNull(message = "Player id must not be null") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -183,7 +182,7 @@ public class PlayersResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createPlayerService(
+    public void createPlayerResource(
             @Valid @NotNull(message = "Player passed in request cannot be null") Players newPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -211,7 +210,7 @@ public class PlayersResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updatePlayerService(
+    public void updatePlayerResource(
             @Valid @NotNull(message = "Player passed as parameter cannot be null") Players updatedPlayer,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -244,7 +243,7 @@ public class PlayersResource {
      */
     @DELETE
     @Path("{id}")
-    public void removePlayerService(
+    public void removePlayerResource(
             @Valid @NotNull(message = "Player id must not be null") @PathParam("id") Long playerId,
             @Suspended final AsyncResponse asyncResponse) {
 

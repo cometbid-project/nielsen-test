@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -64,7 +63,7 @@ public class GameResource {
 
     private static final Logger LOGGER = new Logger(GameResource.class.getName());
 
-    @EJB
+    @Inject
     private GamesFacadeLocal gamesFacade;
     
     @Inject
@@ -91,7 +90,7 @@ public class GameResource {
     }
 
     /**
-     * For example: GET /games/leagueId/123/seasonId/342?pgNo=1&pgSize=10
+     * For example: GET /games/page/leagueId/123/seasonId/342?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
@@ -100,8 +99,8 @@ public class GameResource {
      * @param asyncResponse
      */
     @GET
-    @Path("leagueId/{leagueId}/seasonId/{seasonId}")
-    public void gamesPaginated(@DefaultValue("1")
+    @Path("/page/leagueId/{leagueId}/seasonId/{seasonId}")
+    public void gamesPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -154,7 +153,7 @@ public class GameResource {
      */
     @GET
     @Path("leagueId/{leagueId}/seasonId/{seasonId}")
-    public void allGames(Integer pageSize,
+    public void allGamesResource(Integer pageSize,
             @PathParam("leagueId")Long leagueId, @PathParam("seasonId")Long seasonId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -198,7 +197,7 @@ public class GameResource {
      */
     @GET
     @Path("{id}")
-    public void getGames(@PathParam("id")
+    public void getGamesResource(@PathParam("id")
             @Valid @NotNull(message = "Games id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -231,7 +230,7 @@ public class GameResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createCurrencyService(
+    public void createGameResource(
             @Valid @NotNull(message = "Games passed in request cannot be null") Games newGames,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -259,7 +258,7 @@ public class GameResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateCurrencyService(
+    public void updateGameResource(
             @Valid @NotNull(message = "Currency passed as parameter cannot be null") Games updatedGames,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -293,7 +292,7 @@ public class GameResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeCurrencyService(@PathParam("id")
+    public void removeGameResource(@PathParam("id")
             @Valid @NotNull(message = "Currency id must not be null") Long gameId,
             @Suspended final AsyncResponse asyncResponse) {
 

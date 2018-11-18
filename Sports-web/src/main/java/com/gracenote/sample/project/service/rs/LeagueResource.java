@@ -23,7 +23,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.PostConstruct;
-import javax.ejb.EJB;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.interceptor.Interceptors;
@@ -63,7 +62,7 @@ public class LeagueResource {
 
     private static final Logger LOGGER = new Logger(LeagueResource.class.getName());
 
-    @EJB
+    @Inject
     private LeagueFacadeLocal leagueFacade;
 
     @Inject
@@ -88,14 +87,15 @@ public class LeagueResource {
     }
 
     /**
-     * For example: GET /leagues?pgNo=1&pgSize=10
+     * For example: GET /leagues/page?pgNo=1&pgSize=10
      *
      * @param pageNumber
      * @param pageSize
      * @param asyncResponse
      */
     @GET
-    public void getLeaguesPaginated(@DefaultValue("1")
+    @Path("/page")
+    public void getLeaguesPaginatedResource(@DefaultValue("1")
             @QueryParam("pgNo")
             @Valid
             @NotNull(message = "Page number must not be null")
@@ -143,7 +143,7 @@ public class LeagueResource {
      * @param asyncResponse
      */
     @GET
-    public void allLeagues(@Suspended final AsyncResponse asyncResponse) {
+    public void allLeaguesResource(@Suspended final AsyncResponse asyncResponse) {
 
         utService.configureTimeout(asyncResponse);
 
@@ -183,7 +183,7 @@ public class LeagueResource {
      */
     @GET
     @Path("{id}")
-    public void getLeague(@PathParam("id")
+    public void getLeagueResource(@PathParam("id")
             @Valid @NotNull(message = "League id must not be null") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -217,7 +217,7 @@ public class LeagueResource {
      */
     @POST
     @Consumes({MediaType.APPLICATION_JSON})
-    public void createLeagueService(
+    public void createLeagueResource(
             @Valid @NotNull(message = "League passed in request cannot be null") League newLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -245,7 +245,7 @@ public class LeagueResource {
      */
     @PUT
     @Consumes({MediaType.APPLICATION_JSON})
-    public void updateLeagueService(
+    public void updateLeagueResource(
             @Valid @NotNull(message = "League passed as parameter cannot be null") League updatedLeague,
             @Suspended final AsyncResponse asyncResponse) {
 
@@ -278,7 +278,7 @@ public class LeagueResource {
      */
     @DELETE
     @Path("{id}")
-    public void removeLeagueService(
+    public void removeLeagueResource(
             @Valid @NotNull(message = "League id must not be null") @PathParam("id") Long leagueId,
             @Suspended final AsyncResponse asyncResponse) {
 
